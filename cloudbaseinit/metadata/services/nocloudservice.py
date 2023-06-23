@@ -342,3 +342,6 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
 
         network_config_parser = NoCloudNetworkConfigV1Parser()
         return network_config_parser.parse(network_data.get("config"))
+
+    def get_admin_password(self):
+        return self.get_user_data().get('admin_pass')
