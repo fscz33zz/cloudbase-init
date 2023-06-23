@@ -280,12 +280,11 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
         super(NoCloudConfigDriveService, self).__init__(
             'cidata', 'meta-data')
         self._meta_data = {}
-        self._user_config = None
+        self._admin_pass = None
 
     def get_user_data(self):
         if self._user_config is None:
-            self._user_config = yaml.load(
-                self._get_cache_data("user-data"), Loader=SafeLoader)
+            self._user_config =
         return self._user_config
 
     def _get_meta_data(self):
@@ -350,4 +349,7 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
         return network_config_parser.parse(network_data.get("config"))
 
     def get_admin_password(self):
-        return self.get_user_data().get('admin_pass')
+        if self._admin_pass is None:
+            self._admin_pass = yaml.load(
+                self._get_cache_data("user-data"), Loader=SafeLoader)
+        return self._admin_pass
