@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import netaddr
+import yaml
+from yaml.loader import SafeLoader
 
 from oslo_log import log as oslo_logging
 
@@ -278,9 +280,13 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
         super(NoCloudConfigDriveService, self).__init__(
             'cidata', 'meta-data')
         self._meta_data = {}
+        self._user_config = None
 
     def get_user_data(self):
-        return self._get_cache_data("user-data")
+        if self._user_config is None:
+            self._user_config = yaml.load(
+                self._get_cache_data("user-data"), Loader=SafeLoader)
+        return self._user_config
 
     def _get_meta_data(self):
         if self._meta_data:
