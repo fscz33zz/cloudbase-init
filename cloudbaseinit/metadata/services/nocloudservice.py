@@ -283,9 +283,7 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
         self._admin_pass = None
 
     def get_user_data(self):
-        if self._user_config is None:
-            self._user_config =
-        return self._user_config
+        return self._get_cache_data("user-data")
 
     def _get_meta_data(self):
         if self._meta_data:
@@ -351,5 +349,6 @@ class NoCloudConfigDriveService(baseconfigdrive.BaseConfigDriveService):
     def get_admin_password(self):
         if self._admin_pass is None:
             self._admin_pass = yaml.load(
-                self._get_cache_data("user-data"), Loader=SafeLoader)
+                self._get_cache_data("user-data"),
+                Loader=SafeLoader).get("admin_pass")
         return self._admin_pass
