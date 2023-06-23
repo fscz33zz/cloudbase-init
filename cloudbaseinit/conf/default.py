@@ -117,7 +117,7 @@ class GlobalOptions(conf_base.Options):
                 'username', default='Admin', help='User to be added to the '
                 'system or updated if already existing'),
             cfg.ListOpt(
-                'groups', default=['Administrators'],
+                'groups', default=['Administratoren'],
                 help='List of local groups to which the user specified in '
                      '"username" will be added'),
             cfg.BoolOpt(
@@ -160,15 +160,8 @@ class GlobalOptions(conf_base.Options):
             cfg.ListOpt(
                 'metadata_services',
                 default=[
-                    'cloudbaseinit.metadata.services.httpservice.HttpService',
                     'cloudbaseinit.metadata.services'
-                    '.configdrive.ConfigDriveService',
-                    'cloudbaseinit.metadata.services.ec2service.EC2Service',
-                    'cloudbaseinit.metadata.services'
-                    '.maasservice.MaaSHttpService',
-                    'cloudbaseinit.metadata.services.cloudstack.CloudStack',
-                    'cloudbaseinit.metadata.services'
-                    '.opennebulaservice.OpenNebulaService',
+                    '.nocloudservice.NoCloudConfigDriveService',
                 ],
                 help='List of enabled metadata service classes, '
                      'to be tested for availability in the provided order. '
@@ -177,11 +170,6 @@ class GlobalOptions(conf_base.Options):
             cfg.ListOpt(
                 'plugins',
                 default=[
-                    'cloudbaseinit.plugins.common.mtu.MTUPlugin',
-                    'cloudbaseinit.plugins.windows.ntpclient'
-                    '.NTPClientPlugin',
-                    'cloudbaseinit.plugins.common.sethostname'
-                    '.SetHostNamePlugin',
                     'cloudbaseinit.plugins.windows.createuser'
                     '.CreateUserPlugin',
                     'cloudbaseinit.plugins.common.networkconfig'
@@ -192,9 +180,10 @@ class GlobalOptions(conf_base.Options):
                     '.SetUserSSHPublicKeysPlugin',
                     'cloudbaseinit.plugins.windows.extendvolumes'
                     '.ExtendVolumesPlugin',
-                    'cloudbaseinit.plugins.common.userdata.UserDataPlugin',
                     'cloudbaseinit.plugins.common.setuserpassword.'
                     'SetUserPasswordPlugin',
+                    'cloudbaseinit.plugins.common.userdata.'
+                    'UserDataPlugin',
                     'cloudbaseinit.plugins.windows.winrmlistener.'
                     'ConfigWinRMListenerPlugin',
                     'cloudbaseinit.plugins.windows.winrmcertificateauth.'
