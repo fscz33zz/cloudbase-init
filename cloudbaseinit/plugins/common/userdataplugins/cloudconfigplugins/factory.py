@@ -42,6 +42,10 @@ PLUGINS = collections.OrderedDict([
                'cloudconfigplugins.runcmd.RunCmdPlugin'),
     ('chpasswd', 'cloudbaseinit.plugins.common.userdataplugins.'
                'cloudconfigplugins.chpasswd.ChPasswdPlugin'),
+    ('ssh_pwauth', 'cloudbaseinit.plugins.common.userdataplugins.'
+               'cloudconfigplugins.ssh_pwauth.SSHPwAuthPlugin'),
+    ('disable_root', 'cloudbaseinit.plugins.common.userdataplugins.'
+               'cloudconfigplugins.disable_root.DisableRootPlugin'),
 ])
 
 

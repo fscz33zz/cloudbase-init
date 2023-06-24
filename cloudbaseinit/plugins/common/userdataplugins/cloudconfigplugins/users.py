@@ -114,9 +114,16 @@ class UsersPlugin(base.BaseCloudConfigPlugin):
             os.makedirs(user_ssh_dir)
 
         LOG.info("Writing SSH public keys in: %s" % authorized_keys_path)
-        with open(authorized_keys_path, 'w') as f:
-            for public_key in public_keys:
-                f.write(public_key + "\n")
+        if os.path.exists(authorized_keys_path):
+            with open(authorized_keys_path, 'r') as f:
+                pks_to_add = [pk for pk in public_keys if pk in f.readlines()]
+            with open(authorized_keys_path, 'a') as f:
+                for pk in pks_to_add:
+                    f.write(public_key + "\n")
+        else:
+            with open(authorized_keys_path, 'w') as f:
+                for public_key in public_keys:
+                    f.write(public_key + "\n")
 
         if is_admin:
             osutils.set_ssh_admin_acls(authorized_keys_path)
