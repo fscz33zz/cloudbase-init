@@ -1790,20 +1790,29 @@ class WindowsUtils(base.BaseOSUtils):
                 ' %(err)s' % {'out': out, 'err': err})
 
     def set_ssh_user_acls(self, user, path):
-        LOG.debug("Assigning ssh required ACLs on path: %s", path)
-        (sid, err, code) = self.execute_system32_process(
-            ["wmic useraccount where name='%s' get sid "
-                "| find /v \"SID\"" % user])
+        LOG.debug("Assigning ssh required ACLs for %s on path: %s" %
+                  (user, path))
+        (out, err, code) = self.execute_system32_process([
+            "cmd.exe", "/c",
+            "wmic useraccount where name='%s' get sid" % user])
         if code == 0:
+            sid = out.decode('ascii').splitlines()[2].strip()
             (out, err, code) = self.execute_system32_process([
-                "icacls.exe", path, "/inheritance:r", "/grant:r",
+                "icacls", path, "/inheritance:r", "/grant:r",
                 "*S-1-5-18:F", "*%s:F" % sid])
+            if code != 0:
+                LOG.warning("Could not set permissions on file")
+        else:
+            LOG.warning(
+                "Could not determine sid of user %s. Error: %s" % (user, err))
 
     def set_ssh_admin_acls(self, path):
-        LOG.debug("Assigning ssh required ACLs on path: %s", path)
+        LOG.debug("Assigning ssh required ACLs on path: %s" % path)
         (out, err, code) = self.execute_system32_process([
-            "icacls.exe", path, "/inheritance:r", "/grant:r",
+            "icacls", path, "/inheritance:r", "/grant:r",
             "*S-1-5-18:F", "*S-1-5-32-544:F"])
+        if code != 0:
+            LOG.warning("Could not set permissions on file")
 
     def set_path_admin_acls(self, path):
         LOG.debug("Assigning admin ACLs on path: %s", path)

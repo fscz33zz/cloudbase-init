@@ -93,7 +93,6 @@ class UsersPlugin(base.BaseCloudConfigPlugin):
     @staticmethod
     def _set_ssh_public_keys(user_name, groups, public_keys, osutils):
 
-        LOG.info("user groups: %s | admin groups: %s" % (groups, CONF.groups))
         is_admin = len([ug for ug in groups if ug in CONF.groups]) > 0
 
         if is_admin:
