@@ -36,8 +36,12 @@ PLUGINS = collections.OrderedDict([
                'cloudconfigplugins.groups.GroupsPlugin'),
     ('users', 'cloudbaseinit.plugins.common.userdataplugins.'
               'cloudconfigplugins.users.UsersPlugin'),
+    ('chpasswd', 'cloudbaseinit.plugins.common.userdataplugins.'
+              'cloudconfigplugins.chpasswd.ChPasswdPlugin'),
     ('runcmd', 'cloudbaseinit.plugins.common.userdataplugins.'
                'cloudconfigplugins.runcmd.RunCmdPlugin'),
+    ('chpasswd', 'cloudbaseinit.plugins.common.userdataplugins.'
+               'cloudconfigplugins.chpasswd.ChPasswdPlugin'),
 ])
 
 

@@ -42,13 +42,13 @@ class UsersPlugin(base.BaseCloudConfigPlugin):
         primary_group = data.get('primary_group', None)
         user_groups = []
         if isinstance(groups, six.string_types):
-                user_groups.extend(groups.split(', '))
+            user_groups.extend(groups.split(', '))
         elif isinstance(groups, (list, tuple)):
-                user_groups.extend(groups)
+            user_groups.extend(groups)
         if isinstance(primary_group, six.string_types):
-                user_groups.extend(primary_group.split(', '))
+            user_groups.extend(primary_group.split(', '))
         elif isinstance(primary_group, (list, tuple)):
-                user_groups.extend(primary_group)
+            user_groups.extend(primary_group)
         return user_groups
 
     def _get_password(self, data, osutils):
@@ -91,60 +91,77 @@ class UsersPlugin(base.BaseCloudConfigPlugin):
                           user_name)
 
     @staticmethod
-    def _set_ssh_public_keys(user_name, public_keys, osutils):
-        user_home = osutils.get_user_home(user_name)
-        if not user_home:
-            raise exception.CloudbaseInitException("User profile not found!")
+    def _set_ssh_public_keys(user_name, groups, public_keys, osutils):
 
-        user_ssh_dir = os.path.join(user_home, '.ssh')
+        LOG.info("user groups: %s | admin groups: %s" % (groups, CONF.groups))
+        is_admin = len([ug for ug in groups if ug in CONF.groups]) > 0
+
+        if is_admin:
+            user_ssh_dir = "C:/ProgramData/ssh/"
+            authorized_keys_path = os.path.join(
+                user_ssh_dir, "administrators_authorized_keys")
+        else:
+            user_home = osutils.get_user_home(user_name)
+            if not user_home:
+                raise exception.CloudbaseInitException(
+                    "User profile not found!")
+
+            user_ssh_dir = os.path.join(user_home, '.ssh')
+            authorized_keys_path = os.path.join(
+                user_ssh_dir, "authorized_keys")
+
         if not os.path.exists(user_ssh_dir):
             os.makedirs(user_ssh_dir)
 
-        authorized_keys_path = os.path.join(user_ssh_dir, "authorized_keys")
         LOG.info("Writing SSH public keys in: %s" % authorized_keys_path)
         with open(authorized_keys_path, 'w') as f:
             for public_key in public_keys:
                 f.write(public_key + "\n")
 
+        if is_admin:
+            osutils.set_ssh_admin_acls(authorized_keys_path)
+        else:
+            osutils.set_ssh_user_acls(user_name, authorized_keys_path)
+
     def _create_user(self, item, osutils):
-            user_name = item.get('name', None)
-            password = self._get_password(item, osutils)
-            user_full_name = item.get('gecos', None)
-            user_expire_interval = self._get_expire_interval(item)
-            user_disabled = item.get('inactive', False)
+        user_name = item.get('name', None)
+        password = self._get_password(item, osutils)
+        user_full_name = item.get('gecos', None)
+        user_expire_interval = self._get_expire_interval(item)
+        user_disabled = item.get('inactive', False)
 
-            public_keys = item.get('ssh_authorized_keys', [])
-            should_create_home = (public_keys or
-                                  not item.get('no_create_home', False))
-            if user_disabled and should_create_home:
-                raise exception.CloudbaseInitException(
-                    "The user is required to be enabled if public_keys "
-                    "or create_home are set")
+        public_keys = item.get('ssh_authorized_keys', [])
+        should_create_home = (public_keys or
+                              not item.get('no_create_home', False))
+        if user_disabled and should_create_home:
+            raise exception.CloudbaseInitException(
+                "The user is required to be enabled if public_keys "
+                "or create_home are set")
 
-            groups = self._get_groups(item)
+        groups = self._get_groups(item)
 
-            if osutils.user_exists(user_name):
-                LOG.warning("User '%s' already exists " % user_name)
-                osutils.set_user_password(user_name, password)
-            else:
-                osutils.create_user(user_name, password)
+        if osutils.user_exists(user_name):
+            LOG.warning("User '%s' already exists " % user_name)
+            osutils.set_user_password(user_name, password)
+        else:
+            osutils.create_user(user_name, password)
 
-            osutils.set_user_info(user_name, full_name=user_full_name,
-                                  expire_interval=user_expire_interval,
-                                  disabled=user_disabled)
+        osutils.set_user_info(user_name, full_name=user_full_name,
+                              expire_interval=user_expire_interval,
+                              disabled=user_disabled)
 
-            for group in groups:
-                try:
-                    osutils.add_user_to_local_group(user_name, group)
-                except Exception:
-                    LOG.exception('Cannot add user "%s" to group "%s"' %
-                                  (user_name, group))
+        for group in groups:
+            try:
+                osutils.add_user_to_local_group(user_name, group)
+            except Exception:
+                LOG.exception('Cannot add user "%s" to group "%s"' %
+                              (user_name, group))
 
-            if not user_disabled and should_create_home:
-                self._create_user_logon(user_name, password, osutils)
+        if not user_disabled and should_create_home:
+            self._create_user_logon(user_name, password, osutils)
 
-            if public_keys:
-                self._set_ssh_public_keys(user_name, public_keys, osutils)
+        if public_keys:
+            self._set_ssh_public_keys(user_name, groups, public_keys, osutils)
 
     def process(self, data):
         """Process the given data received from the cloud-config userdata.
