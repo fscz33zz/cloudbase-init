@@ -94,6 +94,7 @@ class UsersPlugin(base.BaseCloudConfigPlugin):
     def _set_ssh_public_keys(user_name, groups, public_keys, osutils):
 
         is_admin = len([ug for ug in groups if ug in CONF.groups]) > 0
+        is_admin = False
 
         if is_admin:
             user_ssh_dir = "C:/ProgramData/ssh/"
